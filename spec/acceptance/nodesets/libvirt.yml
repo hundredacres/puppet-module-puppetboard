@@ -1,0 +1,11 @@
+HOSTS:
+  ubuntu-server-12042-x64:
+    roles:
+      - master
+    platform: ubuntu-12.04-amd64
+    user: 'vagrant'
+    password: 'vagrant'
+    hypervisor : libvirt
+    qcow2: '/home/nibz/projects/pcci/nocloudprimaryubuntu.qcow2'
+CONFIG:
+  type: foss
