@@ -6,6 +6,7 @@ HOSTS:
     user: 'vagrant'
     password: 'vagrant'
     hypervisor : libvirt
-    qcow2: '/home/nibz/projects/pcci/nocloudprimaryubuntu.qcow2'
+    qcow2: '/home/pcci/sandbox/ubuntuvagrant.qcow2'
+    private_key_file: '/home/pcci/.vagrant_private.key'
 CONFIG:
   type: foss
