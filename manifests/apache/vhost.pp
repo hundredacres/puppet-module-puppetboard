@@ -11,6 +11,10 @@
 #   (string) The vhost ServerName.
 #   No default.
 #
+# [*apache_module*]
+#   (string) Name of Apache module to use
+#   Default: 'puppetlabs'
+#
 # [*wsgi_alias*]
 #   (string) WSGI script alias source
 #   Default: '/'
@@ -37,12 +41,13 @@
 #
 class puppetboard::apache::vhost (
   $vhost_name,
-  $wsgi_alias  = '/',
-  $port        = 5000,
-  $threads     = 5,
-  $user        = $::puppetboard::params::user,
-  $group       = $::puppetboard::params::group,
-  $basedir     = $::puppetboard::params::basedir,
+  $apache_module = 'puppetlabs',
+  $wsgi_alias    = '/',
+  $port          = 5000,
+  $threads       = 5,
+  $user          = $::puppetboard::params::user,
+  $group         = $::puppetboard::params::group,
+  $basedir       = $::puppetboard::params::basedir,
 ) inherits ::puppetboard::params {
 
   $docroot = "${basedir}/puppetboard"
@@ -71,15 +76,27 @@ class puppetboard::apache::vhost (
     ],
   }
 
-  ::apache::vhost { $vhost_name:
-    port                        => $port,
-    docroot                     => $docroot,
-    wsgi_daemon_process         => $user,
-    wsgi_process_group          => $group,
-    wsgi_script_aliases         => $wsgi_script_aliases,
-    wsgi_daemon_process_options => $wsgi_daemon_process_options,
-    require                     => File["${docroot}/wsgi.py"],
-    notify                      => Service[$::puppetboard::params::apache_service],
+  case $apache_module {
+    'Puppetlabs': {
+      ::apache::vhost { $vhost_name:
+        port                        => $port,
+        docroot                     => $docroot,
+        wsgi_daemon_process         => $user,
+        wsgi_process_group          => $group,
+        wsgi_script_aliases         => $wsgi_script_aliases,
+        wsgi_daemon_process_options => $wsgi_daemon_process_options,
+        require                     => File["${docroot}/wsgi.py"],
+        notify                      => Service[$::puppetboard::params::apache_service],
+      }
+    }
+    'Example42': {
+      ::apache::vhost { $vhost_name:
+        port    => $port,
+        docroot => $docroot,
+        require => File["${docroot}/wsgi.py"],
+        notify  => Service[$::puppetboard::params::apache_service],
+      }
+    }
   }
 
 }
