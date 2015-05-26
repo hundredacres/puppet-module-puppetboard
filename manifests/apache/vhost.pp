@@ -11,9 +11,9 @@
 #   (string) The vhost ServerName.
 #   No default.
 #
-# [*apache_module*]
-#   (string) Name of Apache module to use
-#   Default: 'puppetlabs'
+# [*manage_apache*]
+#   (boolean) Whether or not to manage Apache
+#   Default: true
 #
 # [*wsgi_alias*]
 #   (string) WSGI script alias source
@@ -41,7 +41,7 @@
 #
 class puppetboard::apache::vhost (
   $vhost_name,
-  $apache_module = 'puppetlabs',
+  $manage_apache = true,
   $wsgi_alias    = '/',
   $port          = 5000,
   $threads       = 5,
@@ -76,26 +76,16 @@ class puppetboard::apache::vhost (
     ],
   }
 
-  case $apache_module {
-    'Puppetlabs': {
-      ::apache::vhost { $vhost_name:
-        port                        => $port,
-        docroot                     => $docroot,
-        wsgi_daemon_process         => $user,
-        wsgi_process_group          => $group,
-        wsgi_script_aliases         => $wsgi_script_aliases,
-        wsgi_daemon_process_options => $wsgi_daemon_process_options,
-        require                     => File["${docroot}/wsgi.py"],
-        notify                      => Service[$::puppetboard::params::apache_service],
-      }
-    }
-    'Example42': {
-      ::apache::vhost { $vhost_name:
-        port    => $port,
-        docroot => $docroot,
-        require => File["${docroot}/wsgi.py"],
-        notify  => Service[$::puppetboard::params::apache_service],
-      }
+  if $manage_apache {
+    ::apache::vhost { $vhost_name:
+      port                        => $port,
+      docroot                     => $docroot,
+      wsgi_daemon_process         => $user,
+      wsgi_process_group          => $group,
+      wsgi_script_aliases         => $wsgi_script_aliases,
+      wsgi_daemon_process_options => $wsgi_daemon_process_options,
+      require                     => File["${docroot}/wsgi.py"],
+      notify                      => Service[$::puppetboard::params::apache_service],
     }
   }
 
