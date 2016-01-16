@@ -29,7 +29,7 @@
 #
 # [*git_source*]
 #   (string) Location of upstream Puppetboard GIT repository
-#   Defaults to 'https://github.com/nedap/puppetboard' ($::puppetboard::params::git_source)
+#   Defaults to 'https://github.com/puppet-community/puppetboard' ($::puppetboard::params::git_source)
 #
 # [*puppetdb_host*]
 #   (string) PuppetDB Host
@@ -44,8 +44,8 @@
 #   Defaults to 'None' ($::puppetboard::params::puppetdb_key)
 #
 # [*puppetdb_ssl_verify*]
-#   (string) whether PuppetDB uses SSL or not,  'True' or 'False', or the path to the puppet CA
-#   Defaults to 'False' ($::puppetboard::params::puppetdb_ssl_verify)
+#   (string) whether PuppetDB uses SSL or not (true or false)
+#   Defaults to false ($::puppetboard::params::puppetdb_ssl_verify)
 #
 # [*puppetdb_cert*]
 #   (string, absolute path) path to PuppetMaster/CA signed client SSL cert
@@ -85,7 +85,7 @@
 #
 # [*experimental*]
 #   (bool) Enable experimental features.
-#   Defaults to true ($::puppetboard::params::experimental)
+#   Defaults to false ($::puppetboard::params::experimental)
 #
 # [*revision*]
 #   (string) Commit, tag, or branch from Puppetboard's Git repo to be used
@@ -110,6 +110,10 @@
 # [*manage_group*]
 #   (bool) If true, manage (create) this group. If false do nothing.
 #   Defaults to true
+#
+# [*manage_selinux*]
+#   (bool) If true, manage selinux policies for puppetboard. If false do nothing.
+#   Defaults to true if selinux is enabled
 #
 # [*reports_count*]
 #   (int) This is the number of reports that we want the dashboard to display.
@@ -158,6 +162,7 @@ class puppetboard(
   $experimental        = $::puppetboard::params::experimental,
   $revision            = $::puppetboard::params::revision,
   $reports_count       = $::puppetboard::params::reports_count,
+  $manage_selinux      = $::puppetboard::params::manage_selinux,
   $manage_user         = true,
   $manage_group        = true,
   $manage_git          = false,
@@ -170,6 +175,7 @@ class puppetboard(
   validate_bool($experimental)
   validate_bool($localise_timestamp)
   validate_hash($extra_settings)
+  validate_bool($puppetdb_ssl_verify)
 
   if $manage_group {
     group { $group:
@@ -208,6 +214,7 @@ class puppetboard(
   file { "${basedir}/puppetboard":
     owner   => $user,
     recurse => true,
+    require => Vcsrepo["${basedir}/puppetboard"],
   }
 
   #Template consumes:
@@ -259,16 +266,30 @@ class puppetboard(
     }
   }
 
-  if $manage_git {
+  if $manage_git and !defined(Package['git']) {
     package {'git':
       ensure => installed,
     }
   }
 
-  if $manage_virtualenv {
+  if $manage_virtualenv and !defined(Package[$::puppetboard::params::virtualenv]) {
     package { $::puppetboard::params::virtualenv:
       ensure => installed,
     }
   }
 
+  if $manage_selinux {
+    selboolean {'httpd_can_network_relay' :
+      persistent => true,
+      value      => 'on',
+    }
+    selboolean {'httpd_can_network_connect' :
+      persistent => true,
+      value      => 'on',
+    }
+    selboolean {'httpd_can_network_connect_db' :
+      persistent => true,
+      value      => 'on',
+    }
+  }
 }

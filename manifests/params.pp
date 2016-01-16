@@ -14,15 +14,23 @@ class puppetboard::params {
     'RedHat': {
       $apache_confd   = '/etc/httpd/conf.d'
       $apache_service = 'httpd'
+      File {
+        seltype => 'httpd_sys_content_t',
+      }
     }
     default: { fail("The ${::osfamily} operating system is not supported with the puppetboard module") }
+  }
+
+  $manage_selinux = $::selinux ? {
+    false   => false,
+    default => true,
   }
 
   $user  = 'puppetboard'
   $group = 'puppetboard'
   $groups = undef
   $basedir = '/srv/puppetboard'
-  $git_source = 'https://github.com/nedap/puppetboard'
+  $git_source = 'https://github.com/puppet-community/puppetboard'
 
   $puppetdb_host = 'localhost'
   $puppetdb_port = 8080
