@@ -83,7 +83,7 @@ class puppetboard::apache::vhost (
     wsgi_process_group          => $group,
     wsgi_script_aliases         => $wsgi_script_aliases,
     wsgi_daemon_process_options => $wsgi_daemon_process_options,
-    override                    => $override,
+    directory_allow_override    => $override,
     require                     => File["${docroot}/wsgi.py"],
     notify                      => Service[$::puppetboard::params::apache_service],
   }
