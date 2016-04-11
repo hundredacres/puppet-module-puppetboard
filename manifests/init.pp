@@ -29,7 +29,7 @@
 #
 # [*git_source*]
 #   (string) Location of upstream Puppetboard GIT repository
-#   Defaults to 'https://github.com/puppet-community/puppetboard' ($::puppetboard::params::git_source)
+#   Defaults to 'https://github.com/voxpupuli/puppetboard' ($::puppetboard::params::git_source)
 #
 # [*puppetdb_host*]
 #   (string) PuppetDB Host
@@ -264,7 +264,6 @@ class puppetboard(
       path    => "${basedir}/puppetboard/dev.py",
       line    => " app.run('0.0.0.0')",
       match   => ' app.run\(\'([\d\.]+)\'\)',
-      notify  => Service['puppetboard'],
       require => [
         File["${basedir}/puppetboard"],
         Python::Virtualenv["${basedir}/virtenv-puppetboard"]
