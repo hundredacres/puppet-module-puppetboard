@@ -72,6 +72,37 @@ class { 'puppetboard':
 }
 
 ```
+Offline Mode
+-----
+
+If you are running puppetboard in an environment which does not have network access to public CDNs,
+puppet board can load static assets (jquery, semantic-ui, tablesorter, etc) from the local web server instead of a CDN:
+
+```puppet
+class { 'puppetboard':
+  offline_mode => true,
+}
+```
+
+Set Default Environment
+-----
+
+by default, puppetboard defaults to "production" environment. This can be
+set to default to a different environment.
+
+```puppet
+class { 'puppetboard':
+  default_environment => 'customers',
+}
+```
+
+or to default to "All environments":
+
+```puppet
+class { 'puppetboard':
+  default_environment => '*',
+}
+```
 
 ### Apache
 

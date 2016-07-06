@@ -75,6 +75,10 @@
 #   (bool) Whether to allow the user to run raw queries against PuppetDB.
 #   Defaults to 'True' ($::puppetboard::params::enable_query)
 #
+# [*offline_mode*]
+#   (bool) Weather to load static assents (jquery, semantic-ui, tablesorter, etc)
+#   Defaults to 'False' ($::puppetboard::params::offline_mode
+#
 # [*localise_timestamp*]
 #   (bool) Whether to localise the timestamps in the UI.
 #   Defaults to 'True' ($::puppetboard::params::localise_timestamp)
@@ -86,6 +90,10 @@
 # [*python_proxy*]
 #   (string) HTTP proxy server to use for pip/virtualenv.
 #   Defaults to false ($::puppetboard::params::python_proxy)
+#
+# [*default_environment*]
+#   (string) set the default environment
+#   Defaults to production ($::puppetboard::params::default_environment
 #
 # [*experimental*]
 #   (bool) Enable experimental features.
@@ -168,13 +176,16 @@ class puppetboard(
   $manage_git          = false,
   $manage_virtualenv   = false,
   $reports_count       = $::puppetboard::params::reports_count,
+  $default_environment = $::puppetboard::params::default_environment,
   $listen              = $::puppetboard::params::listen,
+  $offline_mode        = $::puppetboard::params::offline_mode,
   $extra_settings      = $::puppetboard::params::extra_settings,
 ) inherits ::puppetboard::params {
   validate_bool($enable_catalog)
   validate_bool($enable_query)
   validate_bool($experimental)
   validate_bool($localise_timestamp)
+  validate_bool($offline_mode)
   validate_hash($extra_settings)
   if $puppetdb_ssl_verify {
     unless is_string($puppetdb_ssl_verify) {
@@ -237,6 +248,8 @@ class puppetboard(
   #$puppetdb_ssl_verify
   #$puppetdb_timeout
   #$unresponsive
+  #$offline_mode
+  #$default_environment
   #$extra_settings
   file {"${basedir}/puppetboard/settings.py":
     ensure  => 'file',
@@ -280,6 +293,7 @@ class puppetboard(
   if $manage_virtualenv and !defined(Package[$::puppetboard::params::virtualenv]) {
     class { '::python':
       virtualenv => 'present',
+      dev        => 'present',
     }
   }
 
