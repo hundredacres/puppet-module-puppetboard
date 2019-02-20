@@ -92,7 +92,7 @@ See https://docs.puppet.com/puppetdb/latest/connect_puppet_master.html#enabling-
 report storage.
 
 By default, puppetboard displays only 10 reports. This number can be
-controlled to set the number of repports to show.
+controlled to set the number of reports to show.
 
 ```puppet
 class { 'puppetboard':
@@ -209,8 +209,25 @@ http://dashes.acme:5000/pboard. You can then reverse-proxy to it like so:
 
 ```apache
 Redirect /pboard /pboard/
-ReverseProxy /pboard/ http://dashes.acme:5000/pboard/
+ProxyPass /pboard/ http://dashes.acme:5000/pboard/
 ProxyPassReverse /pboard/ http://dashes.acme:5000/pboard/
+```
+
+Using the puppetlabs/apache module:
+
+```puppet
+apache::vhost { 'example.acme':
+  port            => '80',
+  docroot         => '/var/www/html',
+  redirect_source => [ '/pboard' ],
+  redirect_dest   => [ '/pboard/' ],
+  proxy_pass      => [
+    {
+      'path' => '/pboard/',
+      'url'  => 'http://dashes.acme:5000/pboard/',
+    },
+  ],
+}
 ```
 
 ### Redhat/CentOS
@@ -232,6 +249,7 @@ RedHat/CentOS has restrictions on the /etc/apache directory that require wsgi to
 
 # Configure Apache on this server
 class { 'apache': }
+class { 'apache::mod::version': }
 class { 'apache::mod::wsgi':
   wsgi_socket_prefix => "/var/run/wsgi",
 }
@@ -262,7 +280,7 @@ sudo puppet cert generate puppetboard.example.com
 ```
 Note: this name cannot conflict with an existing certificate name.
 
-The new certificate and private key can be found in $certdir/<NAME>.pem and $privatekeydir/<NAME>.pem on the CA puppet master. If you are not running puppetboard on the CA puppet master you will need to copy the certificate and key to the node runing puppetboard.
+The new certificate and private key can be found in $certdir/<NAME>.pem and $privatekeydir/<NAME>.pem on the CA puppet master. If you are not running puppetboard on the CA puppet master you will need to copy the certificate and key to the node running puppetboard.
 
 Here's an example, using new certificates:
 ```puppet

@@ -9,11 +9,7 @@ class puppetboard::params {
   case $facts['os']['family'] {
     'Debian': {
       if ($facts['os']['name'] == 'ubuntu') {
-        if (versioncmp($facts['os']['release']['full'],'14.04')) {
-          $apache_confd   = '/etc/apache2/conf.d'
-        } else {
-          $apache_confd = '/etc/apache2/conf-enabled'
-        }
+        $apache_confd = '/etc/apache2/conf-enabled'
       } else {
         $apache_confd   = '/etc/apache2/conf.d'
       }
@@ -26,6 +22,10 @@ class puppetboard::params {
       File {
         seltype => 'httpd_sys_content_t',
       }
+    }
+    'Suse': {
+      $apache_confd   = '/etc/apache2/conf.d'
+      $apache_service = 'apache2'
     }
     default: { fail("The ${facts['os']['family']} operating system is not supported with the puppetboard module") }
   }
@@ -59,4 +59,5 @@ class puppetboard::params {
   $default_environment = 'production'
   $extra_settings = {}
   $enable_ldap_auth = false
+  $ldap_require_group = false
 }
